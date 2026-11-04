@@ -203,11 +203,20 @@
     e.preventDefault(); const ok = fields.map(check).every(Boolean);
     if (!ok) { fields.find(el => el.getAttribute('aria-invalid') === 'true').focus(); return; }
     const out = $('#formOk'); const v = id => $('#' + id).value.trim();
-    const lines = ['Name: ' + v('name'), 'Company: ' + v('company'), 'Email: ' + v('email'), 'Scope: ' + $('#scope').value, '', v('message')].join('\n');
-    location.href = 'mailto:topline.infra@gmail.com?subject=' + encodeURIComponent('Tender inquiry: ' + $('#scope').value) + '&body=' + encodeURIComponent(lines);
-    out.textContent = `Thank you, ${v('name')}. Your email app should open with this inquiry ready to send to our tender desk. If it does not, write to topline.infra@gmail.com.`;
-    out.classList.remove('hidden'); form.reset(); fields.forEach(el => { el.removeAttribute('aria-invalid'); el.classList.remove('border-red-500'); }); $('#count').textContent = '0 / 20 min';
-    // Connect to your backend here, e.g. fetch('/api/inquiry', { method: 'POST', body: new FormData(form) })
+    const submit = form.querySelector('[type="submit"]');
+    submit.disabled = true;
+    out.textContent = 'Sending your inquiry…'; out.classList.remove('hidden');
+    fetch('/api/inquiry', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: v('name'), company: v('company'), email: v('email'), scope: $('#scope').value, message: v('message') })
+    }).then(async response => {
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || 'Your inquiry could not be sent. Please try again.');
+      out.textContent = `Thank you, ${v('name')}. Your inquiry has been sent successfully.`;
+      form.reset(); fields.forEach(el => { el.removeAttribute('aria-invalid'); el.classList.remove('border-red-500'); }); $('#count').textContent = '0 / 20 min';
+    }).catch(error => {
+      out.textContent = error.message || 'Your inquiry could not be sent. Please try again later.';
+    }).finally(() => { submit.disabled = false; });
   });
   } catch (e) {}
   try {

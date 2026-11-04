@@ -131,6 +131,15 @@ Then navigate to `http://localhost:8000` in your browser.
 npx serve .
 ```
 
+## Contact form email delivery on Vercel
+
+The contact form sends submissions to `viaanagarwal396@gmail.com` through the Vercel function at `/api/inquiry` and the Resend email API. Configure these environment variables in the Vercel project settings for each deployment environment:
+
+- `RESEND_API_KEY`: an API key from Resend.
+- `RESEND_FROM_EMAIL`: a sender address on a domain verified in Resend (for example, `Topline Website <website@your-verified-domain.com>`).
+
+Redeploy after adding or changing the variables. The sender domain must be verified with Resend before the function can deliver email.
+
 ---
 
 ## 🌐 Browser Compatibility
